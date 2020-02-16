@@ -1,5 +1,5 @@
 # dougbowser
-An Basic Super Mario Maker 2 Course Editor
+An Experimental Super Mario Maker 2 Course Editor
 
 ## Pre-Requisites
 [dougbowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
