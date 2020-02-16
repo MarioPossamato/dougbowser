@@ -1,13 +1,13 @@
-# Doug Bowser
+# dougbowser
 An Basic Super Mario Maker 2 Course Editor
 
 ## Pre-Requisites
-[DougBowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
+[dougbowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
 [Python 3.7](https://www.python.org/downloads/release/python-370/)  
 
-## Running cdt2bcd
-On `Windows`, you can just double-click `cdt2bcd.py` which is included in the package  
-On `Linux`, open the console and run `python3 path_to_cdt2bcd.py`
+## Running dougbowser
+On `Windows`, you can just double-click `dougbowser.py` which is included in the package  
+On `Linux`, open the console and run `python3 path_to_dougbowser.py`
 
 ## Where do I get help/support?
 [My Discord Server](https://discord.gg/8wx8uQF)
@@ -16,5 +16,4 @@ On `Linux`, open the console and run `python3 path_to_cdt2bcd.py`
 [My Discord Server](https://discord.gg/8wx8uQF)
 
 ## Who gets credit for this?
-- Mario Possamato for Doug Bowser
-- Wheatley and AboodXD for the CRC32 Checksum correction
+- Mario Possamato for dougbowser
