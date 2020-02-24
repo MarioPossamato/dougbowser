@@ -118,16 +118,15 @@ class Ui_Form(object):
         self.groupBox_14.setGeometry(QtCore.QRect(20, 589, 272, 103))
         self.groupBox_14.setObjectName("groupBox_14")
         self.EntityNumberBox = QtWidgets.QComboBox(self.groupBox_14)
-        self.EntityNumberBox.setGeometry(QtCore.QRect(10, 20, 135, 30))
+        self.EntityNumberBox.setGeometry(QtCore.QRect(10, 20, 252, 30))
         self.EntityNumberBox.setObjectName("EntityNumberBox")
         self.EntityNumberBox.currentIndexChanged.connect(self.EntityNumberBox_Index_Changed, self.EntityNumberBox.currentIndex())
         self.EntityFlags = QtWidgets.QLineEdit(self.groupBox_14)
         self.EntityFlags.setGeometry(QtCore.QRect(10, 60, 135, 30))
         self.EntityFlags.setMaxLength(16)
-        self.SaveFlags = QtWidgets.QPushButton(self.groupBox_14)
-        self.SaveFlags.setGeometry(QtCore.QRect(151, 20, 111, 71))
-        self.SaveFlags.setText("Save Flags")
-        self.SaveFlags.clicked.connect(self.SaveFlagsToCourse)
+        self.EntityID = QtWidgets.QLineEdit(self.groupBox_14)
+        self.EntityID.setGeometry(QtCore.QRect(153, 60, 109, 30))
+        self.EntityID.setMaxLength(3)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -160,6 +159,7 @@ class Ui_Form(object):
         self.groupBox_13.setTitle(_translate("Form", "All Entities In Course"))
         self.groupBox_14.setTitle(_translate("Form", "Entity Data Editor"))
         self.EntityFlags.setPlaceholderText(_translate("Form", "0600004006000040"))
+        self.EntityID.setPlaceholderText(_translate("Form", "0"))
 
     def HandleOpenFromFile(self):
         global CoursePath
@@ -506,6 +506,20 @@ class Ui_Form(object):
                 SaveMinute = bytearray(SaveMinute)
                 SaveMinute.reverse()
                 SaveMinute = bytes(SaveMinute)
+                EntityFlags = self.EntityFlags.text()
+                ParentFlags, ChildFlags = EntityFlags[:len(EntityFlags)//2], EntityFlags[len(EntityFlags)//2:]
+                ParentFlags, ChildFlags = EntityFlags[:len(EntityFlags)//2], EntityFlags[len(EntityFlags)//2:]
+                ParentFlags = bytes.fromhex(ParentFlags)
+                ParentFlags = bytearray(ParentFlags)
+                ParentFlags.reverse()
+                ParentFlags = bytes(ParentFlags)
+                ChildFlags = bytes.fromhex(ChildFlags)
+                ChildFlags = bytearray(ChildFlags)
+                ChildFlags.reverse()
+                ChildFlags = bytes(ChildFlags)
+                EntityFlags = bytes.hex(ParentFlags)+bytes.hex(ChildFlags)
+                EntityFlags = bytes.fromhex(EntityFlags)
+                EntityID = self.EntityID.text()
                 data[0x4:0x6] = TimeLimit
                 data[0x6:0x7] = Autoscroll
                 data[0x8:0xA] = SaveYear
@@ -513,6 +527,8 @@ class Ui_Form(object):
                 data[0xB:0xC] = SaveDay
                 data[0xC:0xD] = SaveHour
                 data[0xD:0xE] = SaveMinute
+                data[596 + 32 * (int(self.EntityNumberBox.currentText())-1):604 + 32 * (int(self.EntityNumberBox.currentText())-1)] = EntityFlags
+                data[608 + 32 * (int(self.EntityNumberBox.currentText())-1):609 + 32 * (int(self.EntityNumberBox.currentText())-1)] = (int(EntityID)).to_bytes(1, byteorder='big')
                 with open(CoursePath,'wb') as Course:
                     Course.write(data)
 
@@ -532,30 +548,9 @@ class Ui_Form(object):
             ChildFlags = bytes.hex(ChildFlags)
             EntityFlags = ParentFlags + ChildFlags
             self.EntityFlags.setText(EntityFlags)
-
-    def SaveFlagsToCourse(self):
-        if not CoursePath:
-            return
-        else:
-            with open(CoursePath,'rb') as Course:
-                data = Course.read()
-                data = bytearray(data)
-                EntityFlags = self.EntityFlags.text()
-                ParentFlags, ChildFlags = EntityFlags[:len(EntityFlags)//2], EntityFlags[len(EntityFlags)//2:]
-                ParentFlags, ChildFlags = EntityFlags[:len(EntityFlags)//2], EntityFlags[len(EntityFlags)//2:]
-                ParentFlags = bytes.fromhex(ParentFlags)
-                ParentFlags = bytearray(ParentFlags)
-                ParentFlags.reverse()
-                ParentFlags = bytes(ParentFlags)
-                ChildFlags = bytes.fromhex(ChildFlags)
-                ChildFlags = bytearray(ChildFlags)
-                ChildFlags.reverse()
-                ChildFlags = bytes(ChildFlags)
-                EntityFlags = bytes.hex(ParentFlags)+bytes.hex(ChildFlags)
-                EntityFlags = bytes.fromhex(EntityFlags)
-                data[596 + 32 * (int(self.EntityNumberBox.currentText())-1):604 + 32 * (int(self.EntityNumberBox.currentText())-1)] = EntityFlags
-                with open(CoursePath,'wb') as Course:
-                    Course.write(data)
+            Course.seek(608 + 32 * (int(self.EntityNumberBox.currentText())-1))
+            EntityID = Course.read(1)
+            self.EntityID.setText(str(int.from_bytes(EntityID, 'big')))
 
 
 if __name__ == "__main__":
