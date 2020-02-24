@@ -159,6 +159,7 @@ class Ui_Form(object):
         self.ObjectCount.setPlaceholderText(_translate("Form", "1"))
         self.groupBox_13.setTitle(_translate("Form", "All Entities In Course"))
         self.groupBox_14.setTitle(_translate("Form", "Entity Data Editor"))
+        self.EntityFlags.setPlaceholderText(_translate("Form", "0600004006000040"))
 
     def HandleOpenFromFile(self):
         global CoursePath
