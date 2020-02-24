@@ -5,6 +5,7 @@ An Experimental Super Mario Maker 2 Course Editor
 ## Pre-Requisites
 [dougbowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
 [Python 3.7](https://www.python.org/downloads/release/python-370/)  
+PyQt5 `pip install PyQt5`
 
 ## Running dougbowser
 On `Windows`, you can just double-click `dougbowser.py` which is included in the package  
