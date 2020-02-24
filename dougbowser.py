@@ -111,6 +111,7 @@ class Ui_Form(object):
         self.EntitiesList = QtWidgets.QListWidget(self.groupBox_13)
         self.EntitiesList.setGeometry(QtCore.QRect(10, 20, 411, 241))
         self.EntitiesList.setObjectName("EntitiesList")
+        self.EntitiesList.setFont(font)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
