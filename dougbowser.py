@@ -5,7 +5,9 @@ CoursePath = ''
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(771, 601)
+        Form.resize(771, 713)
+        Form.setMinimumSize(QtCore.QSize(771, 713))
+        Form.setMaximumSize(QtCore.QSize(771, 713))
         font = QtGui.QFont()
         font.setFamily("Courier New")
         Form.setFont(font)
@@ -26,7 +28,7 @@ class Ui_Form(object):
         self.coursePath.setReadOnly(True)
         self.coursePath.setObjectName("coursePath")
         self.groupBox_2 = QtWidgets.QGroupBox(Form)
-        self.groupBox_2.setGeometry(QtCore.QRect(10, 120, 751, 471))
+        self.groupBox_2.setGeometry(QtCore.QRect(10, 120, 751, 583))
         self.groupBox_2.setObjectName("groupBox_2")
         self.groupBox_3 = QtWidgets.QGroupBox(self.groupBox_2)
         self.groupBox_3.setGeometry(QtCore.QRect(10, 20, 271, 61))
@@ -95,7 +97,7 @@ class Ui_Form(object):
         self.Autoscroll.setMaxLength(3)
         self.Autoscroll.raise_()
         self.groupBox_11 = QtWidgets.QGroupBox(self.groupBox_2)
-        self.groupBox_11.setGeometry(QtCore.QRect(290, 90, 451, 371))
+        self.groupBox_11.setGeometry(QtCore.QRect(290, 90, 451, 482))
         self.groupBox_11.setObjectName("groupBox_11")
         self.groupBox_12 = QtWidgets.QGroupBox(self.groupBox_11)
         self.groupBox_12.setGeometry(QtCore.QRect(10, 20, 431, 61))
@@ -106,12 +108,26 @@ class Ui_Form(object):
         self.ObjectCount.setObjectName("ObjectCount")
         self.ObjectCount.raise_()
         self.groupBox_13 = QtWidgets.QGroupBox(self.groupBox_11)
-        self.groupBox_13.setGeometry(QtCore.QRect(10, 90, 431, 271))
+        self.groupBox_13.setGeometry(QtCore.QRect(10, 90, 431, 382))
         self.groupBox_13.setObjectName("groupBox_13")
         self.EntitiesList = QtWidgets.QListWidget(self.groupBox_13)
-        self.EntitiesList.setGeometry(QtCore.QRect(10, 20, 411, 241))
+        self.EntitiesList.setGeometry(QtCore.QRect(10, 20, 411, 350))
         self.EntitiesList.setObjectName("EntitiesList")
         self.EntitiesList.setFont(font)
+        self.groupBox_14 = QtWidgets.QGroupBox(Form)
+        self.groupBox_14.setGeometry(QtCore.QRect(20, 589, 272, 103))
+        self.groupBox_14.setObjectName("groupBox_14")
+        self.EntityNumberBox = QtWidgets.QComboBox(self.groupBox_14)
+        self.EntityNumberBox.setGeometry(QtCore.QRect(10, 20, 135, 30))
+        self.EntityNumberBox.setObjectName("EntityNumberBox")
+        self.EntityNumberBox.currentIndexChanged.connect(self.EntityNumberBox_Index_Changed, self.EntityNumberBox.currentIndex())
+        self.EntityFlags = QtWidgets.QLineEdit(self.groupBox_14)
+        self.EntityFlags.setGeometry(QtCore.QRect(10, 60, 135, 30))
+        self.EntityFlags.setMaxLength(16)
+        self.SaveFlags = QtWidgets.QPushButton(self.groupBox_14)
+        self.SaveFlags.setGeometry(QtCore.QRect(151, 20, 111, 71))
+        self.SaveFlags.setText("Save Flags")
+        self.SaveFlags.clicked.connect(self.SaveFlagsToCourse)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -142,6 +158,7 @@ class Ui_Form(object):
         self.groupBox_12.setTitle(_translate("Form", "Object Count"))
         self.ObjectCount.setPlaceholderText(_translate("Form", "1"))
         self.groupBox_13.setTitle(_translate("Form", "All Entities In Course"))
+        self.groupBox_14.setTitle(_translate("Form", "Entity Data Editor"))
 
     def HandleOpenFromFile(self):
         global CoursePath
@@ -444,6 +461,9 @@ class Ui_Form(object):
                 if entity_id == bytes([0x77, 0x00, 0xFF]) or entity_id == bytes([0x77, 0x12, 0xFF]):
                     entity_name = '! Block'
                 self.EntitiesList.addItem(str(i) + ': ' + str(entity_name) + ' @' + str(hex(608 + 32 * i)))
+                if not entity_id == bytes([0x00, 0x00, 0x00]):
+                    self.EntityNumberBox.addItem(str(i + 1))
+            
 
     def HandleSaveAs(self):
         global CoursePath
@@ -492,6 +512,47 @@ class Ui_Form(object):
                 data[0xB:0xC] = SaveDay
                 data[0xC:0xD] = SaveHour
                 data[0xD:0xE] = SaveMinute
+                with open(CoursePath,'wb') as Course:
+                    Course.write(data)
+
+    def EntityNumberBox_Index_Changed(self):
+        with open(CoursePath,'rb') as Course:
+            Course.seek(596 + 32 * (int(self.EntityNumberBox.currentText())-1))
+            ParentFlags = Course.read(4)
+            ParentFlags = bytearray(ParentFlags)
+            ParentFlags.reverse()
+            ParentFlags = bytes(ParentFlags)
+            ParentFlags = bytes.hex(ParentFlags)
+            Course.seek(600 + 32 * (int(self.EntityNumberBox.currentText())-1))
+            ChildFlags = Course.read(4)
+            ChildFlags = bytearray(ChildFlags)
+            ChildFlags.reverse()
+            ChildFlags = bytes(ChildFlags)
+            ChildFlags = bytes.hex(ChildFlags)
+            EntityFlags = ParentFlags + ChildFlags
+            self.EntityFlags.setText(EntityFlags)
+
+    def SaveFlagsToCourse(self):
+        if not CoursePath:
+            return
+        else:
+            with open(CoursePath,'rb') as Course:
+                data = Course.read()
+                data = bytearray(data)
+                EntityFlags = self.EntityFlags.text()
+                ParentFlags, ChildFlags = EntityFlags[:len(EntityFlags)//2], EntityFlags[len(EntityFlags)//2:]
+                ParentFlags, ChildFlags = EntityFlags[:len(EntityFlags)//2], EntityFlags[len(EntityFlags)//2:]
+                ParentFlags = bytes.fromhex(ParentFlags)
+                ParentFlags = bytearray(ParentFlags)
+                ParentFlags.reverse()
+                ParentFlags = bytes(ParentFlags)
+                ChildFlags = bytes.fromhex(ChildFlags)
+                ChildFlags = bytearray(ChildFlags)
+                ChildFlags.reverse()
+                ChildFlags = bytes(ChildFlags)
+                EntityFlags = bytes.hex(ParentFlags)+bytes.hex(ChildFlags)
+                EntityFlags = bytes.fromhex(EntityFlags)
+                data[596 + 32 * (int(self.EntityNumberBox.currentText())-1):604 + 32 * (int(self.EntityNumberBox.currentText())-1)] = EntityFlags
                 with open(CoursePath,'wb') as Course:
                     Course.write(data)
 
