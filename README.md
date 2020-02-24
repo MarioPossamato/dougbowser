@@ -1,6 +1,6 @@
 # dougbowser
 An Experimental Super Mario Maker 2 Course Editor
-![preview](https://cdn.discordapp.com/attachments/615539739587772450/681632890773045257/unknown.png)
+![preview](https://cdn.discordapp.com/attachments/615539739587772450/681649872608166088/unknown.png)
 
 ## Pre-Requisites
 [dougbowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
