@@ -168,6 +168,14 @@ class Ui_Form(object):
             return
         self.coursePath.setText(CoursePath)
         with open(CoursePath,'rb') as Course:
+            Course.seek(0xF4)
+            name = Course.read(66)
+            name = name.decode('utf-16')
+            print(name)
+            Course.seek(0x136)
+            description = Course.read(202)
+            description = description.decode('utf-16')
+            print(description)
             Course.seek(0x4)
             TimeLimit = Course.read(2)
             TimeLimit = bytearray(TimeLimit)
