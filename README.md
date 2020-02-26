@@ -20,3 +20,4 @@ On `Linux`, open the console and run `python3 path_to_dougbowser.py`
 ## Who gets credit for this?
 - Mario Possamato for dougbowser
 - SimonTime, Blawar and 0Liam for course documentation
+- Comex for helping with the utf-16 decoding/encoding
