@@ -5,9 +5,9 @@ CoursePath = ''
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(771, 713)
-        Form.setMinimumSize(QtCore.QSize(771, 713))
-        Form.setMaximumSize(QtCore.QSize(771, 713))
+        Form.resize(771, 790)
+        Form.setMinimumSize(QtCore.QSize(771, 790))
+        Form.setMaximumSize(QtCore.QSize(771, 790))
         font = QtGui.QFont()
         font.setFamily("Courier New")
         Form.setFont(font)
@@ -28,7 +28,7 @@ class Ui_Form(object):
         self.coursePath.setReadOnly(True)
         self.coursePath.setObjectName("coursePath")
         self.groupBox_2 = QtWidgets.QGroupBox(Form)
-        self.groupBox_2.setGeometry(QtCore.QRect(10, 120, 751, 583))
+        self.groupBox_2.setGeometry(QtCore.QRect(10, 120, 751, 660))
         self.groupBox_2.setObjectName("groupBox_2")
         self.groupBox_3 = QtWidgets.QGroupBox(self.groupBox_2)
         self.groupBox_3.setGeometry(QtCore.QRect(10, 20, 271, 61))
@@ -127,6 +127,14 @@ class Ui_Form(object):
         self.EntityID = QtWidgets.QLineEdit(self.groupBox_14)
         self.EntityID.setGeometry(QtCore.QRect(153, 60, 109, 30))
         self.EntityID.setMaxLength(3)
+        self.CourseName = QtWidgets.QLineEdit(Form)
+        self.CourseName.setGeometry(QtCore.QRect(20, 700, 270, 30))
+        self.CourseName.setMaxLength(32)
+        self.CourseName.setReadOnly(True)
+        self.CourseDescription = QtWidgets.QLineEdit(Form)
+        self.CourseDescription.setGeometry(QtCore.QRect(20, 739, 733, 30))
+        self.CourseDescription.setMaxLength(100)
+        self.CourseDescription.setReadOnly(True)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -160,6 +168,8 @@ class Ui_Form(object):
         self.groupBox_14.setTitle(_translate("Form", "Entity Data Editor"))
         self.EntityFlags.setPlaceholderText(_translate("Form", "0600004006000040"))
         self.EntityID.setPlaceholderText(_translate("Form", "0"))
+        self.CourseName.setPlaceholderText(_translate("Form", "Course Name..."))
+        self.CourseDescription.setPlaceholderText(_translate("Form", "Course Description..."))
 
     def HandleOpenFromFile(self):
         global CoursePath
@@ -169,13 +179,13 @@ class Ui_Form(object):
         self.coursePath.setText(CoursePath)
         with open(CoursePath,'rb') as Course:
             Course.seek(0xF4)
-            name = Course.read(66)
-            name = name.decode('utf-16')
-            print(name)
+            CourseName = Course.read(66)
+            CourseName = CourseName.decode('utf-16')
+            self.CourseName.setText(CourseName)
             Course.seek(0x136)
-            description = Course.read(202)
-            description = description.decode('utf-16')
-            print(description)
+            CourseDescription = Course.read(202)
+            CourseDescription = CourseDescription.decode('utf-16')
+            self.CourseDescription.setText(CourseDescription)
             Course.seek(0x4)
             TimeLimit = Course.read(2)
             TimeLimit = bytearray(TimeLimit)
@@ -528,6 +538,8 @@ class Ui_Form(object):
                 EntityFlags = bytes.hex(ParentFlags)+bytes.hex(ChildFlags)
                 EntityFlags = bytes.fromhex(EntityFlags)
                 EntityID = self.EntityID.text()
+                CourseName = self.CourseName.text()
+                CourseDescription = self.CourseDescription.text()
                 data[0x4:0x6] = TimeLimit
                 data[0x6:0x7] = Autoscroll
                 data[0x8:0xA] = SaveYear
@@ -569,4 +581,3 @@ if __name__ == "__main__":
     ui.setupUi(Form)
     Form.show()
     sys.exit(app.exec_())
-
