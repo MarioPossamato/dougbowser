@@ -4,12 +4,22 @@ An Experimental Super Mario Maker 2 Course Editor
 
 ## Pre-Requisites
 [dougbowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
-[Python 3.7](https://www.python.org/downloads/release/python-370/)  
+[Python 3.6](https://www.python.org/downloads/release/python-360/)  
 PyQt5: `pip install PyQt5`
+PyCrypto: `pip install pycrypto`
+NintendoClients: git clone https://github.com/Kinnay/NintendoClients
 
 ## Running dougbowser
-On `Windows`, you can just double-click `dougbowser.py` which is included in the package  
-On `Linux`, open the console and run `python3 path_to_dougbowser.py`
+Open the NintendoClients folder, and copy the `nintendo` folder to the wherever dougbowser is stored on your machine.  
+On Windows, as long as .py files open with Python 3.6 by default, you can just double-click the `dougbowser.py` file.
+Otherwise, run `C:\Users\%username%\AppData\Local\Programs\Python\Python36\python.exe dougbowser.py`
+On Linux...  I don't use Linux, so I don't really know for sure if it will work :P but you can try running the following in a terminal:
+```
+cd ~/dougbowser
+chmod a+x dougbowser.py
+./dougbowser.py
+```
+DO NOT USE THIS SCRIPT RIGHT NOW, BECAUSE THE ENCRYPTION IS NOT WORKING CORRECTLY!
 
 ## Where do I get help/support?
 [My Discord Server](https://discord.gg/8wx8uQF)
@@ -19,5 +29,5 @@ On `Linux`, open the console and run `python3 path_to_dougbowser.py`
 
 ## Who gets credit for this?
 - Mario Possamato for dougbowser
-- SimonTime, Blawar and 0Liam for course documentation
-- Comex for helping with the utf-16 decoding/encoding
+- SimonTime, Blawar, RedDuckss, and 0Liam for course documentation
+- Kinnay for his decryptor and for his NintendoClients repository
