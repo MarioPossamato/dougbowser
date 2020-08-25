@@ -7,18 +7,13 @@ An Experimental Super Mario Maker 2 Course Editor
 [Python 3.6](https://www.python.org/downloads/release/python-360/)  
 PyQt5: `pip install PyQt5`  
 PyCrypto: `pip install pycrypto`  
-NintendoClients: git clone https://github.com/Kinnay/NintendoClients  
+NintendoClients: `pip install https://github.com/Kinnay/NintendoClients/archive/master.zip`  
 
 ## Running dougbowser
 Open the NintendoClients folder, and copy the `nintendo` folder to the wherever dougbowser is stored on your machine.  
 On Windows, as long as .py files open with Python 3.6 by default, you can just double-click the `dougbowser.py` file.
 Otherwise, run `C:\Users\%username%\AppData\Local\Programs\Python\Python36\python.exe dougbowser.py`
-On Linux...  I don't use Linux, so I don't really know for sure if it will work :P but you can try running the following in a terminal:
-```
-cd ~/dougbowser
-chmod a+x dougbowser.py
-./dougbowser.py
-```
+
 DO NOT USE THIS SCRIPT RIGHT NOW, BECAUSE THE ENCRYPTION IS NOT WORKING CORRECTLY!
 
 ## Where do I get help/support?
