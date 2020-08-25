@@ -154,7 +154,7 @@ class MainWindow(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Doug Bowser; Super Mario Maker 2 Binary Course Dataz Editor"))
+        Form.setWindowTitle(_translate("Form", "Doug Bowser; Super Mario Maker 2 Binary Course Data Editor"))
         self.openCourseButton.setText(_translate("Form", "Open Decrypted SMM2 Binary Course Data"))
         self.saveCourseButton.setText(_translate("Form", "Save Decrypted SMM2 Binary Course Data"))
         self.coursePath.setPlaceholderText(_translate("Form", "No Course Selected..."))
@@ -197,7 +197,7 @@ class MainWindow(object):
             else:
                 QtWidgets.QMessageBox.warning(None, 'Error', 'Not a valid Super Mario Maker 2 course file!')
                 return
-            buffer = encryption.decrypt(buffer)
+            buffer = encryption.DecryptCourse(buffer)
             CourseName = buffer[0xF4+HeaderSize:0xF4+HeaderSize+0x42].decode('utf-16')
             self.CourseName.setText(CourseName)
             CourseDescription = buffer[0x136+HeaderSize:0x136+HeaderSize+0xCA].decode('utf-16')
@@ -494,6 +494,7 @@ class MainWindow(object):
     def HandleSave(self):
         global CoursePath, buffer
         if not CoursePath:
+            print('No course has been opened!  Please open one before you try to save it! ;)')
             return
         else:
             buffer = bytearray(buffer)

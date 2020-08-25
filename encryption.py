@@ -44,7 +44,7 @@ keyTable = [
 courseMagic = bytes.hex(b'SCDL')
 
 
-def decryptFile(buffer):
+def DecryptCourse(buffer):
 
     header_size = 0x10
     param = buffer[-0x30:]
@@ -64,7 +64,7 @@ def decryptFile(buffer):
     return buffer[:header_size] + decrypted
 
 
-def encryptFile(buffer):
+def EncryptCourse(buffer):
 
     header = buffer[0:16]
     decrypted = buffer[16:]
