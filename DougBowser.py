@@ -8,56 +8,78 @@
 # This file is part of DougBowser.
 
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
 import encryption
+import sys
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 CoursePath = ''
 HeaderSize = 0x10
 FooterSize = 0x30
 
-class MainWindow(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(771, 790)
-        Form.setMinimumSize(QtCore.QSize(771, 790))
-        Form.setMaximumSize(QtCore.QSize(771, 790))
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__(None)
+        self.setObjectName("Form")
+        self.setWindowTitle("Doug Bowser; Super Mario Maker 2 Binary Course Data Editor")
+        self.resize(771, 790)
+        self.setMinimumSize(QtCore.QSize(771, 790))
+        self.setMaximumSize(QtCore.QSize(771, 790))
+
         font = QtGui.QFont()
         font.setFamily("Courier New")
-        Form.setFont(font)
-        self.groupBox = QtWidgets.QGroupBox(Form)
+        self.setFont(font)
+
+        self.groupBox = QtWidgets.QGroupBox(self)
         self.groupBox.setGeometry(QtCore.QRect(10, 10, 751, 101))
         self.groupBox.setTitle("")
         self.groupBox.setObjectName("groupBox")
+
         self.openCourseButton = QtWidgets.QPushButton(self.groupBox)
         self.openCourseButton.setGeometry(QtCore.QRect(9, 10, 364, 41))
         self.openCourseButton.setObjectName("openCourseButton")
         self.openCourseButton.clicked.connect(self.HandleOpenFromFile)
+        self.openCourseButton.setText("Open SMM2 Binary Course Data")
+
         self.saveCourseButton = QtWidgets.QPushButton(self.groupBox)
         self.saveCourseButton.setGeometry(QtCore.QRect(377, 10, 364, 41))
         self.saveCourseButton.setObjectName("saveCourseButton")
         self.saveCourseButton.clicked.connect(self.HandleSave)
+        self.saveCourseButton.setText("Save SMM2 Binary Course Data")
+
         self.coursePath = QtWidgets.QLineEdit(self.groupBox)
         self.coursePath.setGeometry(QtCore.QRect(10, 60, 731, 31))
         self.coursePath.setReadOnly(True)
         self.coursePath.setObjectName("coursePath")
-        self.groupBox_2 = QtWidgets.QGroupBox(Form)
+        self.coursePath.setPlaceholderText("No Course Selected...")
+
+        self.groupBox_2 = QtWidgets.QGroupBox(self)
         self.groupBox_2.setGeometry(QtCore.QRect(10, 120, 751, 660))
         self.groupBox_2.setObjectName("groupBox_2")
+        self.groupBox_2.setTitle("Raw Data Editor")
+
         self.groupBox_3 = QtWidgets.QGroupBox(self.groupBox_2)
         self.groupBox_3.setGeometry(QtCore.QRect(10, 20, 271, 61))
         self.groupBox_3.setObjectName("groupBox_3")
+        self.groupBox_3.setTitle("Time Limit")
+
         self.TimeLimit = QtWidgets.QLineEdit(self.groupBox_3)
         self.TimeLimit.setGeometry(QtCore.QRect(10, 20, 251, 31))
         self.TimeLimit.setMaxLength(5)
         self.TimeLimit.setReadOnly(False)
         self.TimeLimit.setObjectName("TimeLimit")
+        self.TimeLimit.setPlaceholderText("500")
+
         self.groupBox_4 = QtWidgets.QGroupBox(self.groupBox_2)
         self.groupBox_4.setGeometry(QtCore.QRect(10, 90, 271, 371))
         self.groupBox_4.setObjectName("groupBox_4")
+        self.groupBox_4.setTitle("Date")
+
         self.groupBox_5 = QtWidgets.QGroupBox(self.groupBox_4)
         self.groupBox_5.setGeometry(QtCore.QRect(10, 20, 251, 61))
         self.groupBox_5.setObjectName("groupBox_5")
+        self.groupBox_5.setTitle("Last Saved Year")
+
         self.LastSavedYear = QtWidgets.QLineEdit(self.groupBox_5)
         self.LastSavedYear.setGeometry(QtCore.QRect(10, 20, 231, 31))
         self.LastSavedYear.setText("")
@@ -65,128 +87,137 @@ class MainWindow(object):
         self.LastSavedYear.setReadOnly(False)
         self.LastSavedYear.setObjectName("LastSavedYear")
         self.LastSavedYear.raise_()
+        self.LastSavedYear.setPlaceholderText("2020")
+
         self.groupBox_6 = QtWidgets.QGroupBox(self.groupBox_4)
         self.groupBox_6.setGeometry(QtCore.QRect(10, 90, 251, 61))
         self.groupBox_6.setObjectName("groupBox_6")
+        self.groupBox_6.setTitle("Last Saved Month")
+
         self.LastSavedMonth = QtWidgets.QLineEdit(self.groupBox_6)
         self.LastSavedMonth.setGeometry(QtCore.QRect(10, 20, 231, 31))
         self.LastSavedMonth.setMaxLength(3)
         self.LastSavedMonth.setReadOnly(False)
         self.LastSavedMonth.setObjectName("LastSavedMonth")
         self.LastSavedMonth.raise_()
+        self.LastSavedMonth.setPlaceholderText("1")
+
         self.groupBox_8 = QtWidgets.QGroupBox(self.groupBox_4)
         self.groupBox_8.setGeometry(QtCore.QRect(10, 230, 251, 61))
         self.groupBox_8.setObjectName("groupBox_8")
+        self.groupBox_8.setTitle("Last Saved Hour")
+
         self.LastSavedHour = QtWidgets.QLineEdit(self.groupBox_8)
         self.LastSavedHour.setGeometry(QtCore.QRect(10, 20, 231, 31))
         self.LastSavedHour.setMaxLength(3)
         self.LastSavedHour.setReadOnly(False)
         self.LastSavedHour.setObjectName("LastSavedHour")
         self.LastSavedHour.raise_()
+        self.LastSavedHour.setPlaceholderText("1")
+
         self.groupBox_7 = QtWidgets.QGroupBox(self.groupBox_4)
         self.groupBox_7.setGeometry(QtCore.QRect(10, 160, 251, 61))
         self.groupBox_7.setObjectName("groupBox_7")
+        self.groupBox_7.setTitle("Last Saved Day")
+
         self.LastSavedDay = QtWidgets.QLineEdit(self.groupBox_7)
         self.LastSavedDay.setGeometry(QtCore.QRect(10, 20, 231, 31))
         self.LastSavedDay.setMaxLength(3)
         self.LastSavedDay.setReadOnly(False)
         self.LastSavedDay.setObjectName("LastSavedDay")
         self.LastSavedDay.raise_()
+        self.LastSavedDay.setPlaceholderText("1")
+
         self.groupBox_9 = QtWidgets.QGroupBox(self.groupBox_4)
         self.groupBox_9.setGeometry(QtCore.QRect(10, 300, 251, 61))
         self.groupBox_9.setObjectName("groupBox_9")
+        self.groupBox_9.setTitle("Last Saved Minute")
+
         self.LastSavedMinute = QtWidgets.QLineEdit(self.groupBox_9)
         self.LastSavedMinute.setGeometry(QtCore.QRect(10, 20, 231, 31))
         self.LastSavedMinute.setMaxLength(3)
         self.LastSavedMinute.setReadOnly(False)
         self.LastSavedMinute.setObjectName("LastSavedMinute")
         self.LastSavedMinute.raise_()
+        self.LastSavedMinute.setPlaceholderText("1")
+
         self.groupBox_10 = QtWidgets.QGroupBox(self.groupBox_2)
         self.groupBox_10.setGeometry(QtCore.QRect(290, 20, 451, 61))
         self.groupBox_10.setObjectName("groupBox_10")
+        self.groupBox_10.setTitle("Autoscroll")
+
         self.Autoscroll = QtWidgets.QLineEdit(self.groupBox_10)
         self.Autoscroll.setGeometry(QtCore.QRect(10, 20, 431, 31))
         self.Autoscroll.setReadOnly(False)
         self.Autoscroll.setObjectName("Autoscroll")
         self.Autoscroll.setMaxLength(3)
         self.Autoscroll.raise_()
+        self.Autoscroll.setPlaceholderText("0")
+
         self.groupBox_11 = QtWidgets.QGroupBox(self.groupBox_2)
         self.groupBox_11.setGeometry(QtCore.QRect(290, 90, 451, 482))
         self.groupBox_11.setObjectName("groupBox_11")
+        self.groupBox_11.setTitle("Entities")
+
         self.groupBox_12 = QtWidgets.QGroupBox(self.groupBox_11)
         self.groupBox_12.setGeometry(QtCore.QRect(10, 20, 431, 61))
         self.groupBox_12.setObjectName("groupBox_12")
+        self.groupBox_12.setTitle("Object Count")
+
         self.ObjectCount = QtWidgets.QLineEdit(self.groupBox_12)
         self.ObjectCount.setGeometry(QtCore.QRect(10, 20, 411, 31))
         self.ObjectCount.setReadOnly(True)
         self.ObjectCount.setObjectName("ObjectCount")
         self.ObjectCount.raise_()
+        self.ObjectCount.setPlaceholderText("1")
+
         self.groupBox_13 = QtWidgets.QGroupBox(self.groupBox_11)
         self.groupBox_13.setGeometry(QtCore.QRect(10, 90, 431, 382))
         self.groupBox_13.setObjectName("groupBox_13")
+        self.groupBox_13.setTitle("All Entities In Course")
+
         self.EntitiesList = QtWidgets.QListWidget(self.groupBox_13)
         self.EntitiesList.setGeometry(QtCore.QRect(10, 20, 411, 350))
         self.EntitiesList.setObjectName("EntitiesList")
-        self.groupBox_14 = QtWidgets.QGroupBox(Form)
+
+        self.groupBox_14 = QtWidgets.QGroupBox(self)
         self.groupBox_14.setGeometry(QtCore.QRect(20, 589, 272, 103))
         self.groupBox_14.setObjectName("groupBox_14")
+        self.groupBox_14.setTitle("Entity Data Viewer")
+
         self.EntityNumberBox = QtWidgets.QComboBox(self.groupBox_14)
         self.EntityNumberBox.setGeometry(QtCore.QRect(10, 20, 252, 30))
         self.EntityNumberBox.setObjectName("EntityNumberBox")
         self.EntityNumberBox.currentIndexChanged.connect(self.EntityNumberBoxIndexChanged, self.EntityNumberBox.currentIndex())
+
         self.EntityFlags = QtWidgets.QLineEdit(self.groupBox_14)
         self.EntityFlags.setGeometry(QtCore.QRect(10, 60, 135, 30))
         self.EntityFlags.setMaxLength(16)
+        self.EntityFlags.setPlaceholderText("0600004006000040")
+
         self.EntityID = QtWidgets.QLineEdit(self.groupBox_14)
         self.EntityID.setGeometry(QtCore.QRect(153, 60, 109, 30))
         self.EntityID.setMaxLength(3)
-        self.CourseName = QtWidgets.QLineEdit(Form)
+        self.EntityID.setPlaceholderText("0")
+
+        self.CourseName = QtWidgets.QLineEdit(self)
         self.CourseName.setGeometry(QtCore.QRect(20, 700, 270, 30))
         self.CourseName.setMaxLength(32)
         self.CourseName.setReadOnly(True)
-        self.CourseDescription = QtWidgets.QLineEdit(Form)
+        self.CourseName.setPlaceholderText("Course Name...")
+
+        self.CourseDescription = QtWidgets.QLineEdit(self)
         self.CourseDescription.setGeometry(QtCore.QRect(20, 739, 733, 30))
         self.CourseDescription.setMaxLength(100)
         self.CourseDescription.setReadOnly(True)
+        self.CourseDescription.setPlaceholderText("Course Description...")
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
-
-    def retranslateUi(self, Form):
-        _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Doug Bowser; Super Mario Maker 2 Binary Course Data Editor"))
-        self.openCourseButton.setText(_translate("Form", "Open Decrypted SMM2 Binary Course Data"))
-        self.saveCourseButton.setText(_translate("Form", "Save Decrypted SMM2 Binary Course Data"))
-        self.coursePath.setPlaceholderText(_translate("Form", "No Course Selected..."))
-        self.groupBox_2.setTitle(_translate("Form", "Raw Data Editor"))
-        self.groupBox_3.setTitle(_translate("Form", "Time Limit"))
-        self.TimeLimit.setPlaceholderText(_translate("Form", "500"))
-        self.groupBox_4.setTitle(_translate("Form", "Date"))
-        self.groupBox_5.setTitle(_translate("Form", "Last Saved Year"))
-        self.LastSavedYear.setPlaceholderText(_translate("Form", "2020"))
-        self.groupBox_6.setTitle(_translate("Form", "Last Saved Month"))
-        self.LastSavedMonth.setPlaceholderText(_translate("Form", "1"))
-        self.groupBox_8.setTitle(_translate("Form", "Last Saved Hour"))
-        self.LastSavedHour.setPlaceholderText(_translate("Form", "1"))
-        self.groupBox_7.setTitle(_translate("Form", "Last Saved Day"))
-        self.LastSavedDay.setPlaceholderText(_translate("Form", "1"))
-        self.groupBox_9.setTitle(_translate("Form", "Last Saved Minute"))
-        self.LastSavedMinute.setPlaceholderText(_translate("Form", "1"))
-        self.groupBox_10.setTitle(_translate("Form", "Autoscroll"))
-        self.Autoscroll.setPlaceholderText(_translate("Form", "0"))
-        self.groupBox_11.setTitle(_translate("Form", "Entities"))
-        self.groupBox_12.setTitle(_translate("Form", "Object Count"))
-        self.ObjectCount.setPlaceholderText(_translate("Form", "1"))
-        self.groupBox_13.setTitle(_translate("Form", "All Entities In Course"))
-        self.groupBox_14.setTitle(_translate("Form", "Entity Data Viewer"))
-        self.EntityFlags.setPlaceholderText(_translate("Form", "0600004006000040"))
-        self.EntityID.setPlaceholderText(_translate("Form", "0"))
-        self.CourseName.setPlaceholderText(_translate("Form", "Course Name..."))
-        self.CourseDescription.setPlaceholderText(_translate("Form", "Course Description..."))
+    def __init2__(self):
+        return
 
     def HandleOpenFromFile(self):
         global CoursePath, buffer
-        CoursePath = QtWidgets.QFileDialog.getOpenFileName(Form, "Open Course", '', 'Binary Course Data File (*.bcd)')[0]
+        CoursePath = QtWidgets.QFileDialog.getOpenFileName(self, "Open Course", '', 'Binary Course Data File (*.bcd)')[0]
         if not CoursePath:
             return
         self.coursePath.setText(CoursePath)
@@ -553,8 +584,12 @@ class MainWindow(object):
             buffer[0xB+HeaderSize:0xC+HeaderSize] = SaveDay
             buffer[0xC+HeaderSize:0xD+HeaderSize] = SaveHour
             buffer[0xD+HeaderSize:0xE+HeaderSize] = SaveMinute
-            with open(CoursePath,'wb') as Course:
-                Course.write(buffer)
+            with open(CoursePath,'rb') as Course:
+                buffer = Course.read()
+                decrypted = buffer[0x10:]
+                encrypted = encryption.EncryptCourse(decrypted)
+                with open(CoursePath,'wb') as Course:
+                    Course.write(encrypted)
 
     def EntityNumberBoxIndexChanged(self):
         global buffer
@@ -574,11 +609,15 @@ class MainWindow(object):
         self.EntityID.setText(str(int.from_bytes(EntityID, 'big')))
 
 
-if __name__ == "__main__":
-    import sys
+def main():
     app = QtWidgets.QApplication(sys.argv)
-    Form = QtWidgets.QWidget()
-    ui = MainWindow()
-    ui.setupUi(Form)
-    Form.show()
-    sys.exit(app.exec_())
+    app.setApplicationDisplayName('')
+
+    mainWindow = MainWindow()
+    mainWindow.__init2__()
+    mainWindow.show()
+    app.exec_()
+    sys.exit()
+
+
+if __name__ == '__main__': main()

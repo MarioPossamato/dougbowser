@@ -21,7 +21,7 @@ import binascii
 import zlib
 
 
-keyTable = [
+KeyTable = [
 	0x7AB1C9D2, 0xCA750936, 0x3003E59C, 0xF261014B,
 	0x2E25160A, 0xED614811, 0xF1AC6240, 0xD59272CD,
 	0xF38549BF, 0x6CF5B327, 0xDA4DB82A, 0x820C435A,
@@ -41,49 +41,51 @@ keyTable = [
 ]
 
 
-courseMagic = bytes.hex(b'SCDL')
+CourseMagic = bytes.hex(b'SCDL')
 
 
-def DecryptCourse(buffer):
+def DecryptCourse(Buffer):
 
-    header_size = 0x10
-    param = buffer[-0x30:]
-    data = buffer[0x10:-0x30]
-    context = struct.unpack_from("<IIII", param, 16)
+    HeaderSize = 0x10
+    CryptoConfig = Buffer[-0x30:]
+    Data = Buffer[0x10:-0x30]
+    Context = struct.unpack_from("<IIII", CryptoConfig, 0x10)
 
-    rand = random.Random(*context)
-    key = crypto.create_key(rand, keyTable, 16)
-    aes = AES.new(key, AES.MODE_CBC, param[:0x10])
-    decrypted = aes.decrypt(data)
+    rand = random.Random(*Context)
+    key = crypto.create_key(rand, KeyTable, 0x10)
+    aes = AES.new(key, AES.MODE_CBC, CryptoConfig[:0x10])
+    Decrypted = aes.decrypt(Data)
 
-    key = crypto.create_key(rand, keyTable, 16)
+    key = crypto.create_key(rand, KeyTable, 0x10)
     mac = CMAC.new(key, ciphermod=AES)
-    mac.update(decrypted)
-    mac.verify(param[0x20:])
+    mac.update(Decrypted)
+    mac.verify(CryptoConfig[0x20:])
 
-    return buffer[:header_size] + decrypted
+    return Buffer[:HeaderSize] + Decrypted
 
 
-def EncryptCourse(buffer):
+def EncryptCourse(Buffer):
 
-    header = buffer[0:16]
-    decrypted = buffer[16:]
+    Header = Buffer[0:0x10]
+    Decrypted = Buffer[0x10:]
 
-    checksum = zlib.crc32(decrypted[16:]) % (1 << 32)
-    header = bytearray(header)
-    header[8:12] = checksum.to_bytes(4, "big")
+    checksum = zlib.crc32(Decrypted) % (1 << 32)
+    Header = bytearray(Header)
+    Header[0x8:0xC] = checksum.to_bytes(4, "big")
 
-    rand = Random.get_random_bytes(48)
-    context = struct.unpack_from("<IIII", rand, 16)
-    rand = random.Random(*context)
-    key = crypto.create_key(rand, keyTable, 16)
-    iv = Random.get_random_bytes(16)
-    random_seed = Random.get_random_bytes(16)
+    rand = Random.get_random_bytes(0x30)
+    Context = struct.unpack_from("<IIII", rand, 0x10)
+    rand = random.Random(*Context)
+    key = crypto.create_key(rand, KeyTable, 0x10)
+    iv = Random.get_random_bytes(0x10)
+    RandomSeed = Random.get_random_bytes(0x10)
     aes = AES.new(key, AES.MODE_CBC, iv)
-    encrypted = aes.encrypt(buffer)
+    Encrypted = aes.encrypt(Buffer)
 
-    key = crypto.create_key(rand, keyTable, 16)
+    key = crypto.create_key(rand, KeyTable, 0x10)
     mac = CMAC.new(key, ciphermod=AES)
-    mac.update(decrypted)
+    mac.update(Encrypted)
 
-    return iv + random_seed + mac.digest()
+    CryptoConfig = iv + RandomSeed + mac.digest()
+
+    return Header + Encrypted + CryptoConfig
