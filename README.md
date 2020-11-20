@@ -6,7 +6,7 @@ An Experimental Super Mario Maker 2 Course Editor
 [DougBowser](https://github.com/MarioPossamato/DougBowser/archive/master.zip)  
 [Python 3.6](https://www.python.org/downloads/release/python-360/)  
 PyQt5: `pip install PyQt5`  
-PyCrypto: `pip install pycrypto`  
+PyCryptodome: `pip install pycryptodome`  
 NintendoClients: `pip install https://github.com/Kinnay/NintendoClients/archive/master.zip`  
 
 ## Running DougBowser
