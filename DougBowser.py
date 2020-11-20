@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # DougBowser
+# An Experimental Super Mario Maker 2 Course Editor 
 # Version 0.1
 # Created by MarioPossamato
 
