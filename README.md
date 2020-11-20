@@ -14,8 +14,6 @@ Open the NintendoClients folder, and copy the `nintendo` folder to the wherever 
 On Windows, as long as .py files open with Python 3.6 by default, you can just double-click the `dougbowser.py` file.
 Otherwise, run `C:\Users\%username%\AppData\Local\Programs\Python\Python36\python.exe dougbowser.py`
 
-DO NOT USE THIS SCRIPT RIGHT NOW, BECAUSE THE ENCRYPTION IS NOT WORKING CORRECTLY!
-
 ## Where do I get help/support?
 [My Discord Server](https://discord.gg/8wx8uQF)
 
@@ -25,4 +23,4 @@ DO NOT USE THIS SCRIPT RIGHT NOW, BECAUSE THE ENCRYPTION IS NOT WORKING CORRECTL
 ## Who gets credit for this?
 - Mario Possamato for DougBowser
 - SimonTime, Blawar, RedDuckss, and 0Liam for course documentation
-- Kinnay for his decryptor and for his NintendoClients repository
+- Kinnay for his NintendoClients repository, and for helping me fix my encryption module
