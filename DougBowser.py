@@ -8,11 +8,11 @@
 # This file is part of DougBowser.
 
 
-import encryption
-import sys
+#==== Module and library imports ====#
+import sys             # Built-in module
 from PyQt5 import QtCore, QtGui, QtWidgets
-
-
+import Encryption
+#====================================#
 CoursePath = ''
 HeaderSize = 0x10
 FooterSize = 0x30
@@ -215,59 +215,76 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init2__(self):
         return
 
+    def EntityNumberBoxIndexChanged(self):
+        global Buffer
+        ParentFlags = Buffer[0x254+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1):0x254+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1)+4]
+        ParentFlags = bytearray(ParentFlags)
+        ParentFlags.reverse()
+        ParentFlags = bytes(ParentFlags)
+        ParentFlags = bytes.hex(ParentFlags)
+        ChildFlags = Buffer[0x258+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1):0x258+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1)+4]
+        ChildFlags = bytearray(ChildFlags)
+        ChildFlags.reverse()
+        ChildFlags = bytes(ChildFlags)
+        ChildFlags = bytes.hex(ChildFlags)
+        EntityFlags = ParentFlags + ChildFlags
+        self.EntityFlags.setText(EntityFlags)
+        EntityID = Buffer[0x260+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1):0x260+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1)+1]
+        self.EntityID.setText(str(int.from_bytes(EntityID, 'big')))
+
     def HandleOpenFromFile(self):
-        global CoursePath, buffer
+        global CoursePath, Buffer
         CoursePath = QtWidgets.QFileDialog.getOpenFileName(self, "Open Course", '', 'Binary Course Data File (*.bcd)')[0]
         if not CoursePath:
             return
         self.coursePath.setText(CoursePath)
         with open(CoursePath,'rb') as Course:
-            buffer = Course.read()
-            if buffer[4:6] == bytes([0x10,0x00]):
+            Buffer = Course.read()
+            if Buffer[4:6] == bytes([0x10,0x00]) and Buffer[12:16].decode('utf-8') == 'SCDL':
                 pass
             else:
                 QtWidgets.QMessageBox.warning(None, 'Error', 'Not a valid Super Mario Maker 2 course file!')
                 return
-            buffer = encryption.DecryptCourse(buffer)
-            CourseName = buffer[0xF4+HeaderSize:0xF4+HeaderSize+0x42].decode('utf-16')
+            Buffer = Encryption.DecryptData(Buffer, Encryption.CourseKeyTable, 0x10)
+            CourseName = Buffer[0xF4+HeaderSize:0xF4+HeaderSize+0x42].decode('utf-16')
             self.CourseName.setText(CourseName)
-            CourseDescription = buffer[0x136+HeaderSize:0x136+HeaderSize+0xCA].decode('utf-16')
+            CourseDescription = Buffer[0x136+HeaderSize:0x136+HeaderSize+0xCA].decode('utf-16')
             self.CourseDescription.setText(CourseDescription)
-            TimeLimit = buffer[0x4+HeaderSize:0x4+HeaderSize+0x4]
+            TimeLimit = Buffer[0x4+HeaderSize:0x4+HeaderSize+0x4]
             TimeLimit = bytearray(TimeLimit)
             TimeLimit.reverse()
             TimeLimit = bytes(TimeLimit)
             TimeLimit = bytes.hex(TimeLimit)
             TimeLimit = int(TimeLimit, 16)
             self.TimeLimit.setText(str(TimeLimit))
-            SaveYear = buffer[0x8+HeaderSize:0x8+HeaderSize+0x2]
+            SaveYear = Buffer[0x8+HeaderSize:0x8+HeaderSize+0x2]
             SaveYear = bytearray(SaveYear)
             SaveYear.reverse()
             SaveYear = bytes(SaveYear)
             SaveYear = bytes.hex(SaveYear)
             SaveYear = int(SaveYear, 16)
             self.LastSavedYear.setText(str(SaveYear))
-            SaveMonth = buffer[0xA+HeaderSize:0xA+HeaderSize+0x1]
+            SaveMonth = Buffer[0xA+HeaderSize:0xA+HeaderSize+0x1]
             SaveMonth = bytes.hex(SaveMonth)
             SaveMonth = int(SaveMonth, 16)
             self.LastSavedMonth.setText(str(SaveMonth))
-            SaveDay = buffer[0xB+HeaderSize:0xB+HeaderSize+0x1]
+            SaveDay = Buffer[0xB+HeaderSize:0xB+HeaderSize+0x1]
             SaveDay = bytes.hex(SaveDay)
             SaveDay = int(SaveDay, 16)
             self.LastSavedDay.setText(str(SaveDay))
-            SaveHour = buffer[0xC+HeaderSize:0xC+HeaderSize+0x1]
+            SaveHour = Buffer[0xC+HeaderSize:0xC+HeaderSize+0x1]
             SaveHour = bytes.hex(SaveHour)
             SaveHour = int(SaveHour, 16)
             self.LastSavedHour.setText(str(SaveHour))
-            SaveMinute = buffer[0xD+HeaderSize:0xD+HeaderSize+0x1]
+            SaveMinute = Buffer[0xD+HeaderSize:0xD+HeaderSize+0x1]
             SaveMinute = bytes.hex(SaveMinute)
             SaveMinute = int(SaveMinute, 16)
             self.LastSavedMinute.setText(str(SaveMinute))
-            Autoscroll = buffer[0x6+HeaderSize:0x6+HeaderSize+0x1]
+            Autoscroll = Buffer[0x6+HeaderSize:0x6+HeaderSize+0x1]
             Autoscroll = bytes.hex(Autoscroll)
             Autoscroll = int(Autoscroll, 16)
             self.Autoscroll.setText(str(Autoscroll))
-            ObjectCount = buffer[0x21C+HeaderSize:0x21C+HeaderSize+0x4]
+            ObjectCount = Buffer[0x21C+HeaderSize:0x21C+HeaderSize+0x4]
             ObjectCount = bytearray(ObjectCount)
             ObjectCount.reverse()
             ObjectCount = bytes(ObjectCount)
@@ -275,260 +292,260 @@ class MainWindow(QtWidgets.QMainWindow):
             ObjectCount = int(ObjectCount, 16)
             self.ObjectCount.setText(str(ObjectCount))
             for i in range(2600):
-                EntityID = buffer[0x260+HeaderSize+0x20*i:0x260+HeaderSize+0x3+0x20*i]
+                EntityID = Buffer[0x260+HeaderSize+0x20*i:0x260+HeaderSize+0x3+0x20*i]
                 EntityName = f'Unknown({EntityID})'
                 if EntityID == bytes([0x00, 0x00, 0xFF]) or EntityID == bytes([0x00, 0x12, 0xFF]):
-                    EntityName = 'Goomba/Galoomba'
+                    EntityName = 'Goomba'
                 if EntityID == bytes([0x01, 0x00, 0xFF]) or EntityID == bytes([0x01, 0x12, 0xFF]):
-                    EntityName = 'Koopa Troopa'
+                    EntityName = 'KoopaTroopa'
                 if EntityID == bytes([0x02, 0x00, 0xFF]) or EntityID == bytes([0x02, 0x12, 0xFF]):
-                    EntityName = 'Piranha Plant/Jumping Piranha Plant'
+                    EntityName = 'PiranhaPlant'
                 if EntityID == bytes([0x03, 0x00, 0xFF]) or EntityID == bytes([0x03, 0x12, 0xFF]):
-                    EntityName = 'Hammer Bro'
+                    EntityName = 'HammerBro'
                 if EntityID == bytes([0x04, 0x00, 0xFF]) or EntityID == bytes([0x04, 0x12, 0xFF]):
                     EntityName = 'Block'
                 if EntityID == bytes([0x05, 0x00, 0xFF]) or EntityID == bytes([0x05, 0x12, 0xFF]):
-                    EntityName = '? Block'
+                    EntityName = 'QuestionMarkBlock'
                 if EntityID == bytes([0x06, 0x00, 0xFF]) or EntityID == bytes([0x06, 0x12, 0xFF]):
-                    EntityName = 'Hard Block'
+                    EntityName = 'HardBlock'
                 if EntityID == bytes([0x07, 0x00, 0xFF]) or EntityID == bytes([0x07, 0x12, 0xFF]):
                     EntityName = 'Ground'
                 if EntityID == bytes([0x08, 0x00, 0xFF]) or EntityID == bytes([0x08, 0x12, 0xFF]):
-                    EntityName = 'Coin/Frozen Coin'
+                    EntityName = 'Coin'
                 if EntityID == bytes([0x09, 0x00, 0xFF]) or EntityID == bytes([0x09, 0x12, 0xFF]):
                     EntityName = 'Pipe'
                 if EntityID == bytes([0x0A, 0x00, 0xFF]) or EntityID == bytes([0x0A, 0x12, 0xFF]):
                     EntityName = 'Trampoline'
                 if EntityID == bytes([0x0B, 0x00, 0xFF]) or EntityID == bytes([0x0B, 0x12, 0xFF]):
-                    EntityName = 'Lift/Cloud Lift'
+                    EntityName = 'Lift'
                 if EntityID == bytes([0x0C, 0x00, 0xFF]) or EntityID == bytes([0x0C, 0x12, 0xFF]):
                     EntityName = 'Thwomp'
                 if EntityID == bytes([0x0D, 0x00, 0xFF]) or EntityID == bytes([0x0D, 0x12, 0xFF]):
-                    EntityName = 'Bill Blaster'
+                    EntityName = 'BillBlaster'
                 if EntityID == bytes([0x0E, 0x00, 0xFF]) or EntityID == bytes([0x0E, 0x12, 0xFF]):
-                    EntityName = 'Mushroom Platform'
+                    EntityName = 'MushroomPlatform'
                 if EntityID == bytes([0x0F, 0x00, 0xFF]) or EntityID == bytes([0x0F, 0x12, 0xFF]):
-                    EntityName = 'Bob-omb'
+                    EntityName = 'BobOmb'
                 if EntityID == bytes([0x10, 0x00, 0xFF]) or EntityID == bytes([0x70, 0x12, 0xFF]):
-                    EntityName = 'Semisolid Platform'
+                    EntityName = 'SemisolidPlatform'
                 if EntityID == bytes([0x11, 0x00, 0xFF]) or EntityID == bytes([0x11, 0x12, 0xFF]):
                     EntityName = 'Bridge'
                 if EntityID == bytes([0x12, 0x00, 0xFF]) or EntityID == bytes([0x12, 0x12, 0xFF]):
-                    EntityName = 'P-Switch'
+                    EntityName = 'PSwitch'
                 if EntityID == bytes([0x13, 0x00, 0xFF]) or EntityID == bytes([0x13, 0x12, 0xFF]):
-                    EntityName = 'Pow Block'
+                    EntityName = 'PowBlock'
                 if EntityID == bytes([0x14, 0x00, 0xFF]) or EntityID == bytes([0x14, 0x12, 0xFF]):
-                    EntityName = 'Super Mushroom/Master Sword'
+                    EntityName = 'SuperMushroom'
                 if EntityID == bytes([0x15, 0x00, 0xFF]) or EntityID == bytes([0x15, 0x12, 0xFF]):
-                    EntityName = 'Donut Block'
+                    EntityName = 'DonutBlock'
                 if EntityID == bytes([0x16, 0x00, 0xFF]) or EntityID == bytes([0x16, 0x12, 0xFF]):
-                    EntityName = 'Cloud Block'
+                    EntityName = 'CloudBlock'
                 if EntityID == bytes([0x17, 0x00, 0xFF]) or EntityID == bytes([0x17, 0x12, 0xFF]):
-                    EntityName = 'Note Block'
+                    EntityName = 'NoteBlock'
                 if EntityID == bytes([0x18, 0x00, 0xFF]) or EntityID == bytes([0x18, 0x12, 0xFF]):
                     EntityName = 'Firebar'
                 if EntityID == bytes([0x19, 0x00, 0xFF]) or EntityID == bytes([0x19, 0x12, 0xFF]):
                     EntityName = 'Spiny'
                 if EntityID == bytes([0x1A, 0x00, 0xFF]) or EntityID == bytes([0x1A, 0x12, 0xFF]):
-                    EntityName = 'Goal Ground'
+                    EntityName = 'GoalGround'
                 if EntityID == bytes([0x1B, 0x00, 0xFF]) or EntityID == bytes([0x1B, 0x12, 0xFF]):
-                    EntityName = 'Goal Pole'
+                    EntityName = 'GoalPole'
                 if EntityID == bytes([0x1C, 0x00, 0xFF]) or EntityID == bytes([0x1C, 0x12, 0xFF]):
-                    EntityName = 'Buzzy Beatle'
+                    EntityName = 'BuzzyBeatle'
                 if EntityID == bytes([0x1D, 0x00, 0xFF]) or EntityID == bytes([0x1D, 0x12, 0xFF]):
-                    EntityName = 'Hidden Block'
+                    EntityName = 'HiddenBlock'
                 if EntityID == bytes([0x1E, 0x00, 0xFF]) or EntityID == bytes([0x1E, 0x12, 0xFF]):
                     EntityName = 'Lakitu'
                 if EntityID == bytes([0x1F, 0x00, 0xFF]) or EntityID == bytes([0x1F, 0x12, 0xFF]):
                     EntityName = 'Cloud'
                 if EntityID == bytes([0x20, 0x00, 0xFF]) or EntityID == bytes([0x70, 0x12, 0xFF]):
-                    EntityName = 'Banzai Bill'
+                    EntityName = 'BanzaiBill'
                 if EntityID == bytes([0x21, 0x00, 0xFF]) or EntityID == bytes([0x21, 0x12, 0xFF]):
-                    EntityName = '1-Up Mushroom'
+                    EntityName = '1UPMushroom'
                 if EntityID == bytes([0x22, 0x00, 0xFF]) or EntityID == bytes([0x22, 0x12, 0xFF]):
-                    EntityName = 'Fire Flower'
+                    EntityName = 'FireFlower'
                 if EntityID == bytes([0x23, 0x00, 0xFF]) or EntityID == bytes([0x23, 0x12, 0xFF]):
-                    EntityName = 'Super Star'
+                    EntityName = 'SuperStar'
                 if EntityID == bytes([0x24, 0x00, 0xFF]) or EntityID == bytes([0x24, 0x12, 0xFF]):
-                    EntityName = 'Lava Lift'
+                    EntityName = 'LavaLift'
                 if EntityID == bytes([0x25, 0x00, 0xFF]) or EntityID == bytes([0x25, 0x12, 0xFF]):
-                    EntityName = 'Ground Start'
+                    EntityName = 'GroundStart'
                 if EntityID == bytes([0x26, 0x00, 0xFF]) or EntityID == bytes([0x26, 0x12, 0xFF]):
-                    EntityName = 'Start Arrow'
+                    EntityName = 'StartArrow'
                 if EntityID == bytes([0x27, 0x00, 0xFF]) or EntityID == bytes([0x27, 0x12, 0xFF]):
                     EntityName = 'Kameck'
                 if EntityID == bytes([0x28, 0x00, 0xFF]) or EntityID == bytes([0x28, 0x12, 0xFF]):
-                    EntityName = 'Spike Top'
+                    EntityName = 'SpikeTop'
                 if EntityID == bytes([0x29, 0x00, 0xFF]) or EntityID == bytes([0x29, 0x12, 0xFF]):
                     EntityName = 'Boo'
                 if EntityID == bytes([0x2A, 0x00, 0xFF]) or EntityID == bytes([0x2A, 0x12, 0xFF]):
-                    EntityName = 'Koopa Clown Car'
+                    EntityName = 'KoopaClownCar'
                 if EntityID == bytes([0x2B, 0x00, 0xFF]) or EntityID == bytes([0x2B, 0x12, 0xFF]):
-                    EntityName = 'Spike Trap'
+                    EntityName = 'SpikeTrap'
                 if EntityID == bytes([0x2C, 0x00, 0xFF]) or EntityID == bytes([0x2C, 0x12, 0xFF]):
-                    EntityName = '3rd Tier Powerup'
+                    EntityName = '3rdTierPowerup'
                 if EntityID == bytes([0x2D, 0x00, 0xFF]) or EntityID == bytes([0x2D, 0x12, 0xFF]):
-                    EntityName = 'Shoe Goomba/Yoshi'
+                    EntityName = 'ShoeGoomba'
                 if EntityID == bytes([0x2E, 0x00, 0xFF]) or EntityID == bytes([0x2E, 0x12, 0xFF]):
-                    EntityName = 'Dry Bones'
+                    EntityName = 'DryBones'
                 if EntityID == bytes([0x2F, 0x00, 0xFF]) or EntityID == bytes([0x2F, 0x12, 0xFF]):
                     EntityName = 'Cannon'
                 if EntityID == bytes([0x30, 0x00, 0xFF]) or EntityID == bytes([0x70, 0x12, 0xFF]):
                     EntityName = 'Blooper'
                 if EntityID == bytes([0x31, 0x00, 0xFF]) or EntityID == bytes([0x31, 0x12, 0xFF]):
-                    EntityName = 'Castle Bridge'
+                    EntityName = 'CastleBridge'
                 if EntityID == bytes([0x32, 0x00, 0xFF]) or EntityID == bytes([0x32, 0x12, 0xFF]):
-                    EntityName = 'Hop-Chops'
+                    EntityName = 'HopChops'
                 if EntityID == bytes([0x33, 0x00, 0xFF]) or EntityID == bytes([0x33, 0x12, 0xFF]):
                     EntityName = 'Skipsqueak'
                 if EntityID == bytes([0x34, 0x00, 0xFF]) or EntityID == bytes([0x34, 0x12, 0xFF]):
                     EntityName = 'Wiggler'
                 if EntityID == bytes([0x35, 0x00, 0xFF]) or EntityID == bytes([0x35, 0x12, 0xFF]):
-                    EntityName = 'Conveyer Belt'
+                    EntityName = 'ConveyerBelt'
                 if EntityID == bytes([0x36, 0x00, 0xFF]) or EntityID == bytes([0x36, 0x12, 0xFF]):
                     EntityName = 'Burner'
                 if EntityID == bytes([0x37, 0x00, 0xFF]) or EntityID == bytes([0x37, 0x12, 0xFF]):
-                    EntityName = 'Warp Door'
+                    EntityName = 'WarpDoor'
                 if EntityID == bytes([0x38, 0x00, 0xFF]) or EntityID == bytes([0x38, 0x12, 0xFF]):
-                    EntityName = 'Cheep Cheep'
+                    EntityName = 'CheepCheep'
                 if EntityID == bytes([0x39, 0x00, 0xFF]) or EntityID == bytes([0x39, 0x12, 0xFF]):
                     EntityName = 'Muncher'
                 if EntityID == bytes([0x3A, 0x00, 0xFF]) or EntityID == bytes([0x3A, 0x12, 0xFF]):
-                    EntityName = 'Rocky Wrench'
+                    EntityName = 'RockyWrench'
                 if EntityID == bytes([0x3B, 0x00, 0xFF]) or EntityID == bytes([0x3B, 0x12, 0xFF]):
                     EntityName = 'Rail'
                 if EntityID == bytes([0x3C, 0x00, 0xFF]) or EntityID == bytes([0x3C, 0x12, 0xFF]):
-                    EntityName = 'Lava Bubble'
+                    EntityName = 'LavaBubble'
                 if EntityID == bytes([0x3D, 0x00, 0xFF]) or EntityID == bytes([0x3D, 0x12, 0xFF]):
-                    EntityName = 'Chain Chomp'
+                    EntityName = 'ChainChomp'
                 if EntityID == bytes([0x3E, 0x00, 0xFF]) or EntityID == bytes([0x3E, 0x12, 0xFF]):
-                    EntityName = 'Bowser/Meowser'
+                    EntityName = 'Bowser'
                 if EntityID == bytes([0x3F, 0x00, 0xFF]) or EntityID == bytes([0x3F, 0x12, 0xFF]):
-                    EntityName = 'Ice Block'
+                    EntityName = 'IceBlock'
                 if EntityID == bytes([0x40, 0x00, 0xFF]) or EntityID == bytes([0x70, 0x12, 0xFF]):
                     EntityName = 'Vine'
                 if EntityID == bytes([0x41, 0x00, 0xFF]) or EntityID == bytes([0x41, 0x12, 0xFF]):
                     EntityName = 'Stingby'
                 if EntityID == bytes([0x42, 0x00, 0xFF]) or EntityID == bytes([0x42, 0x12, 0xFF]):
-                    EntityName = 'Arrow Sign'
+                    EntityName = 'ArrowSign'
                 if EntityID == bytes([0x43, 0x00, 0xFF]) or EntityID == bytes([0x43, 0x12, 0xFF]):
-                    EntityName = 'One-Way Wall'
+                    EntityName = 'OneWayWall'
                 if EntityID == bytes([0x44, 0x00, 0xFF]) or EntityID == bytes([0x44, 0x12, 0xFF]):
                     EntityName = 'Grinder'
                 if EntityID == bytes([0x45, 0x00, 0xFF]) or EntityID == bytes([0x45, 0x12, 0xFF]):
                     EntityName = 'Player'
                 if EntityID == bytes([0x46, 0x00, 0xFF]) or EntityID == bytes([0x46, 0x12, 0xFF]):
-                    EntityName = '10-Coin'
+                    EntityName = '10Coin'
                 if EntityID == bytes([0x47, 0x00, 0xFF]) or EntityID == bytes([0x47, 0x12, 0xFF]):
-                    EntityName = 'Semisolid Platform (3D World)'
+                    EntityName = 'SemisolidPlatform3DWorld)'
                 if EntityID == bytes([0x48, 0x00, 0xFF]) or EntityID == bytes([0x48, 0x12, 0xFF]):
-                    EntityName = 'Koopa Troopa Car'
+                    EntityName = 'KoopaTroopaCar'
                 if EntityID == bytes([0x49, 0x00, 0xFF]) or EntityID == bytes([0x49, 0x12, 0xFF]):
                     EntityName = 'Toad'
                 if EntityID == bytes([0x4A, 0x00, 0xFF]) or EntityID == bytes([0x4A, 0x12, 0xFF]):
-                    EntityName = 'Spike/Spike Ball'
+                    EntityName = 'Spike'
                 if EntityID == bytes([0x4B, 0x00, 0xFF]) or EntityID == bytes([0x4B, 0x12, 0xFF]):
                     EntityName = 'Stone'
                 if EntityID == bytes([0x4C, 0x00, 0xFF]) or EntityID == bytes([0x4C, 0x12, 0xFF]):
                     EntityName = 'Twister'
                 if EntityID == bytes([0x4D, 0x00, 0xFF]) or EntityID == bytes([0x4D, 0x12, 0xFF]):
-                    EntityName = 'Boom Boom'
+                    EntityName = 'BoomBoom'
                 if EntityID == bytes([0x4E, 0x00, 0xFF]) or EntityID == bytes([0x4E, 0x12, 0xFF]):
                     EntityName = 'Pokey'
                 if EntityID == bytes([0x4F, 0x00, 0xFF]) or EntityID == bytes([0x4F, 0x12, 0xFF]):
-                    EntityName = 'P-Block'
+                    EntityName = 'PBlock'
                 if EntityID == bytes([0x50, 0x00, 0xFF]) or EntityID == bytes([0x70, 0x12, 0xFF]):
-                    EntityName = 'Dash Block'
+                    EntityName = 'DashBlock'
                 if EntityID == bytes([0x51, 0x00, 0xFF]) or EntityID == bytes([0x51, 0x12, 0xFF]):
                     EntityName = 'None'
                 if EntityID == bytes([0x52, 0x00, 0xFF]) or EntityID == bytes([0x52, 0x12, 0xFF]):
                     EntityName = 'Bumper'
                 if EntityID == bytes([0x53, 0x00, 0xFF]) or EntityID == bytes([0x53, 0x12, 0xFF]):
-                    EntityName = 'Spike Pillar'
+                    EntityName = 'SpikePillar'
                 if EntityID == bytes([0x54, 0x00, 0xFF]) or EntityID == bytes([0x54, 0x12, 0xFF]):
-                    EntityName = 'Snake Block'
+                    EntityName = 'SnakeBlock'
                 if EntityID == bytes([0x55, 0x00, 0xFF]) or EntityID == bytes([0x55, 0x12, 0xFF]):
-                    EntityName = 'Track Block'
+                    EntityName = 'TrackBlock'
                 if EntityID == bytes([0x56, 0x00, 0xFF]) or EntityID == bytes([0x56, 0x12, 0xFF]):
                     EntityName = 'Charvaargh'
                 if EntityID == bytes([0x57, 0x00, 0xFF]) or EntityID == bytes([0x57, 0x12, 0xFF]):
-                    EntityName = 'Gentle Slope'
+                    EntityName = 'GentleSlope'
                 if EntityID == bytes([0x58, 0x00, 0xFF]) or EntityID == bytes([0x58, 0x12, 0xFF]):
-                    EntityName = 'Steep Slope'
+                    EntityName = 'SteepSlope'
                 if EntityID == bytes([0x59, 0x00, 0xFF]) or EntityID == bytes([0x59, 0x12, 0xFF]):
-                    EntityName = 'Custom Scroll Waypoint'
+                    EntityName = 'CustomScrollWaypoint'
                 if EntityID == bytes([0x5A, 0x00, 0xFF]) or EntityID == bytes([0x5A, 0x12, 0xFF]):
-                    EntityName = 'Checkpoint Flag'
+                    EntityName = 'CheckpointFlag'
                 if EntityID == bytes([0x5B, 0x00, 0xFF]) or EntityID == bytes([0x5B, 0x12, 0xFF]):
                     EntityName = 'Seesaw'
                 if EntityID == bytes([0x5C, 0x00, 0xFF]) or EntityID == bytes([0x5C, 0x12, 0xFF]):
-                    EntityName = 'Pink Coin'
+                    EntityName = 'PinkCoin'
                 if EntityID == bytes([0x5D, 0x00, 0xFF]) or EntityID == bytes([0x5D, 0x12, 0xFF]):
-                    EntityName = 'Clear Pipe'
+                    EntityName = 'ClearPipe'
                 if EntityID == bytes([0x5E, 0x00, 0xFF]) or EntityID == bytes([0x5E, 0x12, 0xFF]):
-                    EntityName = 'Sloped Conveyer Belt'
+                    EntityName = 'SlopedConveyer Belt'
                 if EntityID == bytes([0x5F, 0x00, 0xFF]) or EntityID == bytes([0x5F, 0x12, 0xFF]):
                     EntityName = 'Key'
                 if EntityID == bytes([0x60, 0x00, 0xFF]) or EntityID == bytes([0x60, 0x12, 0xFF]):
-                    EntityName = 'Ant Trooper'
+                    EntityName = 'AntTrooper'
                 if EntityID == bytes([0x61, 0x00, 0xFF]) or EntityID == bytes([0x61, 0x12, 0xFF]):
-                    EntityName = 'Warp Box'
+                    EntityName = 'WarpBox'
                 if EntityID == bytes([0x62, 0x00, 0xFF]) or EntityID == bytes([0x62, 0x12, 0xFF]):
-                    EntityName = 'Bowser Jr.'
+                    EntityName = 'BowserJr.'
                 if EntityID == bytes([0x63, 0x00, 0xFF]) or EntityID == bytes([0x63, 0x12, 0xFF]):
-                    EntityName = 'On/Off Switch'
+                    EntityName = 'OnOffSwitch'
                 if EntityID == bytes([0x64, 0x00, 0xFF]) or EntityID == bytes([0x64, 0x12, 0xFF]):
-                    EntityName = 'Dotted-Line Block'
+                    EntityName = 'DottedLineBlock'
                 if EntityID == bytes([0x65, 0x00, 0xFF]) or EntityID == bytes([0x65, 0x12, 0xFF]):
-                    EntityName = 'Lava Editor'
+                    EntityName = 'LavaEditor'
                 if EntityID == bytes([0x66, 0x00, 0xFF]) or EntityID == bytes([0x66, 0x12, 0xFF]):
-                    EntityName = 'Monty Mole'
+                    EntityName = 'MontyMole'
                 if EntityID == bytes([0x67, 0x00, 0xFF]) or EntityID == bytes([0x67, 0x12, 0xFF]):
-                    EntityName = 'Fish Bones'
+                    EntityName = 'FishBones'
                 if EntityID == bytes([0x68, 0x00, 0xFF]) or EntityID == bytes([0x68, 0x12, 0xFF]):
-                    EntityName = 'Angry Sun'
+                    EntityName = 'AngrySun'
                 if EntityID == bytes([0x69, 0x00, 0xFF]) or EntityID == bytes([0x69, 0x12, 0xFF]):
-                    EntityName = 'Swinging Claw'
+                    EntityName = 'SwingingClaw'
                 if EntityID == bytes([0x6A, 0x00, 0xFF]) or EntityID == bytes([0x6A, 0x12, 0xFF]):
                     EntityName = 'Tree'
                 if EntityID == bytes([0x6B, 0x00, 0xFF]) or EntityID == bytes([0x6B, 0x12, 0xFF]):
-                    EntityName = 'Piranha Creeper'
+                    EntityName = 'PiranhaCreeper'
                 if EntityID == bytes([0x6C, 0x00, 0xFF]) or EntityID == bytes([0x6C, 0x12, 0xFF]):
-                    EntityName = 'Blinking Block'
+                    EntityName = 'BlinkingBlock'
                 if EntityID == bytes([0x6D, 0x00, 0xFF]) or EntityID == bytes([0x6D, 0x12, 0xFF]):
-                    EntityName = 'Sound Effect Icon'
+                    EntityName = 'SoundEffectIcon'
                 if EntityID == bytes([0x6E, 0x00, 0xFF]) or EntityID == bytes([0x6E, 0x12, 0xFF]):
-                    EntityName = 'Spike Block'
+                    EntityName = 'SpikeBlock'
                 if EntityID == bytes([0x6F, 0x00, 0xFF]) or EntityID == bytes([0x6F, 0x12, 0xFF]):
                     EntityName = 'None'
                 if EntityID == bytes([0x70, 0x00, 0xFF]) or EntityID == bytes([0x70, 0x12, 0xFF]):
                     EntityName = 'Crate'
                 if EntityID == bytes([0x71, 0x00, 0xFF]) or EntityID == bytes([0x71, 0x12, 0xFF]):
-                    EntityName = 'Mushroom Trampoline'
+                    EntityName = 'MushroomTrampoline'
                 if EntityID == bytes([0x72, 0x00, 0xFF]) or EntityID == bytes([0x72, 0x12, 0xFF]):
                     EntityName = 'Porcupuffer'
                 if EntityID == bytes([0x73, 0x00, 0xFF]) or EntityID == bytes([0x73, 0x12, 0xFF]):
-                    EntityName = 'Goal Toadette'
+                    EntityName = 'GoalToadette'
                 if EntityID == bytes([0x74, 0x00, 0xFF]) or EntityID == bytes([0x74, 0x12, 0xFF]):
-                    EntityName = 'Super Hammer'
+                    EntityName = 'SuperHammer'
                 if EntityID == bytes([0x75, 0x00, 0xFF]) or EntityID == bytes([0x75, 0x12, 0xFF]):
                     EntityName = 'Bully'
                 if EntityID == bytes([0x76, 0x00, 0xFF]) or EntityID == bytes([0x76, 0x12, 0xFF]):
                     EntityName = 'Icicle'
                 if EntityID == bytes([0x77, 0x00, 0xFF]) or EntityID == bytes([0x77, 0x12, 0xFF]):
-                    EntityName = '! Block'
+                    EntityName = 'ExclamationPointBlock'
                 self.EntitiesList.addItem(str(i) + ': ' + str(EntityName) + ' @' + str(hex(608 + 32 * i)))
                 if not EntityID == bytes([0x00, 0x00, 0x00]):
                     self.EntityNumberBox.addItem(str(i + 1))
             
 
     def HandleSave(self):
-        global CoursePath, buffer
+        global CoursePath, Buffer
         if not CoursePath:
             print('No course has been opened!  Please open one before you try to save it! ;)')
             return
         else:
-            buffer = bytearray(buffer)
+            Buffer = bytearray(Buffer)
             TimeLimit = "%04X" % int(self.TimeLimit.text())
             TimeLimit = bytes.fromhex(TimeLimit)
             TimeLimit = bytearray(TimeLimit)
@@ -577,36 +594,15 @@ class MainWindow(QtWidgets.QMainWindow):
             EntityID = self.EntityID.text()
             CourseName = self.CourseName.text()
             CourseDescription = self.CourseDescription.text()
-            buffer[0x4+HeaderSize:0x6+HeaderSize] = TimeLimit
-            buffer[0x6+HeaderSize:0x7+HeaderSize] = Autoscroll
-            buffer[0x8+HeaderSize:0xA+HeaderSize] = SaveYear
-            buffer[0xA+HeaderSize:0xB+HeaderSize] = SaveMonth
-            buffer[0xB+HeaderSize:0xC+HeaderSize] = SaveDay
-            buffer[0xC+HeaderSize:0xD+HeaderSize] = SaveHour
-            buffer[0xD+HeaderSize:0xE+HeaderSize] = SaveMinute
-            with open(CoursePath,'rb') as Course:
-                buffer = Course.read()
-                decrypted = buffer[0x10:]
-                encrypted = encryption.EncryptCourse(decrypted)
-                with open(CoursePath,'wb') as Course:
-                    Course.write(encrypted)
-
-    def EntityNumberBoxIndexChanged(self):
-        global buffer
-        ParentFlags = buffer[0x254+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1):0x254+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1)+4]
-        ParentFlags = bytearray(ParentFlags)
-        ParentFlags.reverse()
-        ParentFlags = bytes(ParentFlags)
-        ParentFlags = bytes.hex(ParentFlags)
-        ChildFlags = buffer[0x258+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1):0x258+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1)+4]
-        ChildFlags = bytearray(ChildFlags)
-        ChildFlags.reverse()
-        ChildFlags = bytes(ChildFlags)
-        ChildFlags = bytes.hex(ChildFlags)
-        EntityFlags = ParentFlags + ChildFlags
-        self.EntityFlags.setText(EntityFlags)
-        EntityID = buffer[0x260+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1):0x260+HeaderSize+0x20*(int(self.EntityNumberBox.currentText())-1)+1]
-        self.EntityID.setText(str(int.from_bytes(EntityID, 'big')))
+            Buffer[0x4+HeaderSize:0x6+HeaderSize] = TimeLimit
+            Buffer[0x6+HeaderSize:0x7+HeaderSize] = Autoscroll
+            Buffer[0x8+HeaderSize:0xA+HeaderSize] = SaveYear
+            Buffer[0xA+HeaderSize:0xB+HeaderSize] = SaveMonth
+            Buffer[0xB+HeaderSize:0xC+HeaderSize] = SaveDay
+            Buffer[0xC+HeaderSize:0xD+HeaderSize] = SaveHour
+            Buffer[0xD+HeaderSize:0xE+HeaderSize] = SaveMinute
+            with open(CoursePath,'wb') as Course:
+                Course.write(Encryption.EncryptData(Buffer, Encryption.CourseKeyTable, 0x10))
 
 
 def main():
