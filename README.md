@@ -23,4 +23,5 @@ Otherwise, run `C:\Users\%username%\AppData\Local\Programs\Python\Python36\pytho
 ## Who gets credit for this?
 - Mario Possamato for DougBowser
 - SimonTime, Blawar, RedDuckss, and 0Liam for course documentation
-- Kinnay for his NintendoClients repository, and for helping me fix my encryption module
+- Kinnay for his NintendoClients repository
+- Kinnay and 0Liam for helping me fix my encryption module
