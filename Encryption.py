@@ -199,19 +199,19 @@ UnknownKeyTable = [ #==== Unknown Key Table At 0x7101D79AB0 ====#
 def DecryptData(data, KeyTable, HeaderSize):
     Header = data[:HeaderSize]
     EncryptedCourseData = data[HeaderSize:-0x30]
-    Footer = data[-0x30:]
+    CryptoConfig = data[-0x30:]
 
-    context = struct.unpack_from("<IIII", Footer, 0x10)
+    context = struct.unpack_from("<IIII", CryptoConfig, 0x10)
     rand = random.Random(*context)
 
     key = crypto.create_key(rand, KeyTable, 0x10)
-    aes = AES.new(key, AES.MODE_CBC, Footer[:0x10])
+    aes = AES.new(key, AES.MODE_CBC, CryptoConfig[:0x10])
     DecryptedCourseData = aes.decrypt(EncryptedCourseData)
 
     key = crypto.create_key(rand, KeyTable, 0x10)
     mac = CMAC.new(key, ciphermod=AES)
     mac.update(DecryptedCourseData)
-    mac.verify(Footer[0x20:])
+    mac.verify(CryptoConfig[0x20:])
 
     return Header + DecryptedCourseData
 
